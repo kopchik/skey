@@ -15,7 +15,7 @@ req_send = usb.util.build_request_type(CTRL_OUT, CTRL_TYPE_CLASS, CTRL_RECIPIENT
 
 class DigiConsole:
   def __init__(self):
-    self.reattach = False
+    # wait for USB key to be detected
     reported = False
     while True:
       self.dev = usb.core.find(idVendor=0x16c0, idProduct=0x05df)
@@ -28,6 +28,9 @@ class DigiConsole:
       sys.stdout.flush()
       time.sleep(1)
 
+    # some weird code I took from the Internet
+    # no idea what it does
+    self.reattach = False
     if self.dev.is_kernel_driver_active(0):
       self.reattach = True
       self.dev.detach_kernel_driver(0)
@@ -38,13 +41,12 @@ class DigiConsole:
     while True:
       buf = self.dev.ctrl_transfer(req_recv, get_report, (3 << 8) | report_id, 0, 1)
       if not buf:
-        print("empty buf")
+        # print("empty buf")
         time.sleep(0.05)
       result += buf.tostring().decode(errors='ignore')
       if result.endswith('\n'):
         break
     return result[:-1]
-
 
   def writeln(self, s):
     assert isinstance(s, str)
@@ -53,7 +55,6 @@ class DigiConsole:
     wValue = (3 << 8) | report_id
     for b in s.encode():
       res = self.dev.ctrl_transfer(req_send, set_report, wValue, b, [])
-
 
   def disconnect(self):
     usb.util.dispose_resources(self.dev)  # prevent attach_kernel_driver from "Resource busy"
@@ -66,9 +67,9 @@ if __name__ == '__main__':
   from random import choice
   from string import ascii_uppercase, digits
   for x in range(10):
-    s = ''.join(choice(ascii_uppercase + digits) for _ in range(8))
+    s = ''.join(choice(ascii_uppercase + digits) for _ in range(50))
     con.writeln(s)
-    time.sleep(0.02);
+    # time.sleep(0.02);
     ret = con.readln()
     print("result", ret, s == ret);
   con.disconnect()

@@ -19,12 +19,13 @@ char* readln() {
       DigiUSB.refresh();
       continue; }
     int c = DigiUSB.read();
+    DigiUSB.refresh();
     if (c=='\n') {
       break; }
-    buf[ptr++] = c;
+    buf[ptr++] = c; 
 //    digitalWrite(LED, !digitalRead(LED));
   }
-
+  
   buf[ptr] = '\0';
   return buf;
 }
@@ -34,7 +35,7 @@ void writeln(char* s) {
   char* ptr = s;
   do {
     DigiUSB.write(*ptr);
-    DigiUSB.refresh();
+    DigiUSB.refresh(); 
     ptr++;
   } while (*ptr != '\0');
   DigiUSB.write('\n');
@@ -48,3 +49,4 @@ void loop() {
   digitalWrite(LED, !digitalRead(LED));
   writeln(s);
 }
+
